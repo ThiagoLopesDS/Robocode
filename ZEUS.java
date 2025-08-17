@@ -66,7 +66,7 @@ public class ZEUS extends AdvancedRobot {
         double bulletSpeed = 20 - 3 * bulletPower;
         int currentBin = (BINS - 1) / 2;
 
-        // Atualiza estatísticas
+        // Procura o bin mais provável (histograma aprendido)
         int bestBin = currentBin;
         for (int i = 0; i < BINS; i++) {
             if (gfStats[i] > gfStats[bestBin]) {
@@ -85,6 +85,22 @@ public class ZEUS extends AdvancedRobot {
         }
     }
 
+    // --- NOVO: Atualiza o histograma quando acertar um tiro ---
+    public void onBulletHit(BulletHitEvent e) {
+        double bulletBearing = Utils.normalRelativeAngle(
+            e.getBullet().getHeadingRadians() - enemyAbsoluteBearing
+        );
+
+        int currentBin = (BINS - 1) / 2;
+        int hitBin = (int) Math.round(
+            (bulletBearing / MAX_ESCAPE_ANGLE) * currentBin + currentBin
+        );
+
+        if (hitBin >= 0 && hitBin < BINS) {
+            gfStats[hitBin]++;
+        }
+    }
+
     public void onHitByBullet(HitByBulletEvent e) {
         // Reage mudando direção para evitar padrões
         moveDirection = -moveDirection;
@@ -96,3 +112,4 @@ public class ZEUS extends AdvancedRobot {
         setAhead(100 * moveDirection);
     }
 }
+
